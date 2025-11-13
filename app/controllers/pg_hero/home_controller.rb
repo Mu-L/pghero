@@ -1,7 +1,5 @@
 module PgHero
   class HomeController < ActionController::Base
-    layout "pg_hero/application"
-
     http_basic_authenticate_with name: PgHero.username, password: PgHero.password if PgHero.password
 
     protect_from_forgery with: :exception
@@ -22,6 +20,8 @@ module PgHero
         response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline'"
       end
     end
+
+    layout "pg_hero/application"
 
     def index
       @title = "Overview"
