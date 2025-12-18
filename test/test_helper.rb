@@ -9,14 +9,19 @@ class Minitest::Test
   end
 
   def with_explain(value)
-    PgHero.stub(:explain_mode, value) do
-      yield
-    end
+    PgHero.config.merge!({"explain" => value})
+    yield
+  ensure
+    PgHero.remove_instance_variable(:@config)
   end
 
   def with_explain_timeout(value)
-    PgHero.stub(:explain_timeout_sec, value) do
+    previous_value = PgHero.explain_timeout_sec
+    begin
+      PgHero.explain_timeout_sec = value
       yield
+    ensure
+      PgHero.explain_timeout_sec = previous_value
     end
   end
 
