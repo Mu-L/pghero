@@ -184,6 +184,7 @@ class ControllerTest < ActionDispatch::IntegrationTest
 
   def test_reset_query_stats
     post pg_hero.reset_query_stats_path
-    assert_redirected_to "/"
+    assert_response :bad_request
+    assert_match "Cannot reset when historical query stats are enabled", response.body
   end
 end
