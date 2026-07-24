@@ -21,7 +21,7 @@ Be sure to [secure the dashboard](#authentication) in production.
 PgHero can suggest indexes to add. To enable, add to your Gemfile:
 
 ```ruby
-gem "pg_query", ">= 2"
+gem "pg_query", ">= 6"
 ```
 
 and make sure [query stats](#query-stats) are enabled. Read about how it works [here](Suggested-Indexes.md).
