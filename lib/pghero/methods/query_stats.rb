@@ -252,7 +252,7 @@ module PgHero
           query = <<~SQL
             WITH query_stats AS (
               SELECT
-                query_hash AS query_hash,
+                query_hash,
                 pghero_query_stats.user AS user,
                 array_agg(LEFT(query, 10000) ORDER BY REPLACE(LEFT(query, 1000), '?', '!') COLLATE "C" ASC) AS query,
                 (SUM(total_time) / 1000 / 60) AS total_minutes,
