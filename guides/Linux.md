@@ -176,7 +176,6 @@ CPU usage, IOPS, and other stats are available for:
 
 - [Amazon RDS](#amazon-rds)
 - [Google Cloud SQL](#google-cloud-sql)
-- [Azure Database](#azure-database)
 
 Heroku and Digital Ocean do not currently have an API for database metrics.
 
@@ -216,25 +215,6 @@ sudo pghero config:set PGHERO_GCP_DATABASE_ID=my-project:my-instance
 ```
 
 This requires the Monitoring Viewer role.
-
-### Azure Database
-
-[Get your credentials](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) and add these variables to your environment:
-
-```sh
-AZURE_TENANT_ID=...
-AZURE_CLIENT_ID=...
-AZURE_CLIENT_SECRET=...
-AZURE_SUBSCRIPTION_ID=...
-```
-
-Finally, set your database resource URI:
-
-```sh
-PGHERO_AZURE_RESOURCE_ID=/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DBforPostgreSQL/servers/<database-id>
-```
-
-This requires the Monitoring Reader role.
 
 ## Multiple Databases
 

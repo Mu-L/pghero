@@ -10,8 +10,6 @@ module PgHero
           :aws
         elsif gcp_database_id
           :gcp
-        elsif azure_resource_id
-          :azure
         end
       end
 
@@ -75,54 +73,6 @@ module PgHero
         else
           raise NotEnabled, "System stats not enabled"
         end
-      end
-
-      def azure_stats(metric_name, duration: nil, period: nil, offset: nil, series: false)
-        # TODO DRY with RDS stats
-        duration = (duration || 1.hour).to_i
-        period = (period || 1.minute).to_i
-        offset = (offset || 0).to_i
-        end_time = Time.at(((Time.now - offset).to_f / period).ceil * period)
-        start_time = end_time - duration
-
-        interval =
-          case period
-          when 60
-            "PT1M"
-          when 300
-            "PT5M"
-          when 900
-            "PT15M"
-          when 1800
-            "PT30M"
-          when 3600
-            "PT1H"
-          else
-            raise Error, "Unsupported period"
-          end
-
-        client = Azure::Monitor::Profiles::Latest::Mgmt::Client.new
-        # call utc to convert +00:00 to Z
-        timespan = "#{start_time.utc.iso8601}/#{end_time.utc.iso8601}"
-        results = client.metrics.list(
-          azure_resource_id,
-          metricnames: metric_name,
-          aggregation: "Average",
-          timespan: timespan,
-          interval: interval
-        )
-
-        data = {}
-        result = results.value.first
-        if result
-          result.timeseries.first.data.each do |point|
-            data[point.time_stamp.to_time] = point.average
-          end
-        end
-
-        add_missing_data(data, start_time, end_time, period) if series
-
-        data
       end
 
       private
@@ -264,30 +214,9 @@ module PgHero
             }
             gcp_stats(metrics[metric_key], **options)
           end
-        when :azure
-          if metric_key == :free_space
-            quota = azure_stats("storage_limit", **options)
-            used = azure_stats("storage_used", **options)
-            free_space(quota, used)
-          else
-            replication_lag_stat = azure_flexible_server? ? "physical_replication_delay_in_seconds" : "pg_replica_log_delay_in_seconds"
-            metrics = {
-              cpu: "cpu_percent",
-              connections: "active_connections",
-              replication_lag: replication_lag_stat,
-              read_iops: "read_iops", # flexible server only
-              write_iops: "write_iops" # flexible server only
-            }
-            raise Error, "Metric not supported" unless metrics[metric_key]
-            azure_stats(metrics[metric_key], **options)
-          end
         else
           raise NotEnabled, "System stats not enabled"
         end
-      end
-
-      def azure_flexible_server?
-        azure_resource_id.include?("/Microsoft.DBforPostgreSQL/flexibleServers/")
       end
 
       # only use data points included in both series

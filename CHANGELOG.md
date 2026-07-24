@@ -4,6 +4,7 @@
 - Dropped support for Postgres < 14
 - Dropped support for pg_query < 6
 - Dropped support for Sprockets < 4
+- Dropped support for system stats for Azure Database (Ruby SDK no longer supported)
 
 ## 3.8.0 (2026-04-15)
 

@@ -158,8 +158,7 @@ module PgHero
       if databases.size == 1
         databases.values.first.merge!(
           "aws_db_instance_identifier" => ENV["PGHERO_DB_INSTANCE_IDENTIFIER"],
-          "gcp_database_id" => ENV["PGHERO_GCP_DATABASE_ID"],
-          "azure_resource_id" => ENV["PGHERO_AZURE_RESOURCE_ID"]
+          "gcp_database_id" => ENV["PGHERO_GCP_DATABASE_ID"]
         )
       end
 
