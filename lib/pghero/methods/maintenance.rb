@@ -34,19 +34,15 @@ module PgHero
       end
 
       def vacuum_progress
-        if server_version_num >= 90600
-          select_all <<~SQL
-            SELECT
-              pid,
-              phase
-            FROM
-              pg_stat_progress_vacuum
-            WHERE
-              datname = current_database()
-          SQL
-        else
-          []
-        end
+        select_all <<~SQL
+          SELECT
+            pid,
+            phase
+          FROM
+            pg_stat_progress_vacuum
+          WHERE
+            datname = current_database()
+        SQL
       end
 
       def maintenance_info

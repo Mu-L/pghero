@@ -27,8 +27,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_query_stats
-    skip unless gte12?
-
     assert database.reset_query_stats
   end
 
@@ -37,8 +35,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_instance_query_stats_database
-    skip unless gte12?
-
     assert database.reset_query_stats
     ActiveRecord::Base.connection.select_all("SELECT 1")
     assert database.query_stats.any? { |qs| qs[:query] == "SELECT $1" }
@@ -50,8 +46,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_instance_query_stats_database_invalid
-    skip unless gte12?
-
     error = assert_raises(PgHero::Error) do
       database.reset_instance_query_stats(database: "pghero_test2")
     end
@@ -59,8 +53,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_query_stats_user
-    skip unless gte12?
-
     assert database.reset_query_stats
     ActiveRecord::Base.connection.select_all("SELECT 1")
     assert database.query_stats.any? { |qs| qs[:query] == "SELECT $1" }
@@ -72,8 +64,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_query_stats_user_invalid
-    skip unless gte12?
-
     error = assert_raises(PgHero::Error) do
       database.reset_query_stats(user: "postgres2")
     end
@@ -81,8 +71,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_query_stats_query_hash
-    skip unless gte12?
-
     assert database.reset_query_stats
     ActiveRecord::Base.connection.select_all("SELECT 1")
     ActiveRecord::Base.connection.select_all("SELECT 1 + 1")
@@ -98,8 +86,6 @@ class QueryStatsTest < Minitest::Test
   end
 
   def test_reset_query_stats_query_hash_invalid
-    skip unless gte12?
-
     error = assert_raises(PgHero::Error) do
       database.reset_query_stats(query_hash: 0)
     end
@@ -124,9 +110,5 @@ class QueryStatsTest < Minitest::Test
 
   def test_slow_queries
     assert database.slow_queries
-  end
-
-  def gte12?
-    database.server_version_num >= 120000
   end
 end

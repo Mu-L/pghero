@@ -6,6 +6,7 @@ module PgHero
 
     before_action :check_api
     before_action :set_database
+    before_action :check_server_version
     before_action :set_query_stats_enabled
     before_action :set_show_details, only: [:index, :queries, :show_query]
     before_action :ensure_query_stats, only: [:queries]
@@ -357,7 +358,7 @@ module PgHero
       @connections_by_database = group_connections_by_key(connections, :database)
       @connections_by_user = group_connections_by_key(connections, :user)
 
-      if params[:security] && @database.server_version_num >= 90500
+      if params[:security]
         connections.each do |connection|
           connection[:ssl_status] =
             if connection[:ssl]
@@ -421,12 +422,7 @@ module PgHero
 
     # TODO disable if historical query stats enabled?
     def reset_query_stats
-      success =
-        if @database.server_version_num >= 120000
-          @database.reset_query_stats
-        else
-          @database.reset_instance_query_stats
-        end
+      success = @database.reset_query_stats
 
       if success
         redirect_backward notice: "Query stats reset"
@@ -450,6 +446,12 @@ module PgHero
         redirect_to url_for(controller: controller_name, action: action_name, database: @databases.first.id)
       else
         @database = @databases.first
+      end
+    end
+
+    def check_server_version
+      if @database.server_version_num < 140000
+        render plain: "Requires PostgreSQL 14+"
       end
     end
 
@@ -495,7 +497,7 @@ module PgHero
 
     def set_show_details
       @historical_query_stats_enabled = @query_stats_enabled && @database.historical_query_stats_enabled?
-      @show_details = @historical_query_stats_enabled && @database.supports_query_hash?
+      @show_details = @historical_query_stats_enabled
     end
 
     def group_connections(connections, keys)

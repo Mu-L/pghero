@@ -1,6 +1,7 @@
-## 3.8.1 (unreleased)
+## 4.0.0 (unreleased)
 
 - Fixed error with unlogged sequences on replicas
+- Dropped support for Postgres < 14
 
 ## 3.8.0 (2026-04-15)
 

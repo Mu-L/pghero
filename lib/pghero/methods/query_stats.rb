@@ -66,8 +66,6 @@ module PgHero
       # database, user or query hash in Postgres 12+
       def reset_instance_query_stats(database: nil, user: nil, query_hash: nil, raise_errors: false)
         if database || user || query_hash
-          raise PgHero::Error, "Requires PostgreSQL 12+" if server_version_num < 120000
-
           if database
             database_id = execute("SELECT oid FROM pg_database WHERE datname = #{quote(database)}").first.try(:[], "oid")
             raise PgHero::Error, "Database not found: #{database}" unless database_id
@@ -116,10 +114,6 @@ module PgHero
         %w(query_hash user) - PgHero::QueryStats.column_names
       end
 
-      def supports_query_hash?
-        server_version_num >= 90400
-      end
-
       # resetting query stats will reset across the entire Postgres instance in Postgres < 12
       # this is problematic if multiple PgHero databases use the same Postgres instance
       #
@@ -146,18 +140,9 @@ module PgHero
         # nothing to do
         return if query_stats.empty?
 
-        # reset individual databases for Postgres 12+ instance
-        if server_version_num >= 120000
-          query_stats.each do |db_id, db_query_stats|
-            if reset_instance_query_stats(database: mapping[db_id], raise_errors: raise_errors)
-              insert_query_stats(db_id, db_query_stats, now)
-            end
-          end
-        else
-          if reset_instance_query_stats(raise_errors: raise_errors)
-            query_stats.each do |db_id, db_query_stats|
-              insert_query_stats(db_id, db_query_stats, now)
-            end
+        query_stats.each do |db_id, db_query_stats|
+          if reset_instance_query_stats(database: mapping[db_id], raise_errors: raise_errors)
+            insert_query_stats(db_id, db_query_stats, now)
           end
         end
       end
@@ -173,7 +158,7 @@ module PgHero
       end
 
       def query_hash_stats(query_hash, user: nil, current: false)
-        if historical_query_stats_enabled? && supports_query_hash?
+        if historical_query_stats_enabled?
           start_at = 24.hours.ago
           stats = select_all_stats <<~SQL
             SELECT
@@ -213,15 +198,14 @@ module PgHero
         if query_stats_enabled?
           limit ||= 100
           sort ||= "total_minutes"
-          total_time = server_version_num >= 130000 ? "(total_plan_time + total_exec_time)" : "total_time"
           query = <<~SQL
             WITH query_stats AS (
               SELECT
                 LEFT(query, 10000) AS query,
-                #{supports_query_hash? ? "queryid" : "md5(query)"} AS query_hash,
+                queryid AS query_hash,
                 rolname AS user,
-                (#{total_time} / 1000 / 60) AS total_minutes,
-                (#{total_time} / calls) AS average_time,
+                ((total_plan_time + total_exec_time) / 1000 / 60) AS total_minutes,
+                ((total_plan_time + total_exec_time) / calls) AS average_time,
                 calls
               FROM
                 pg_stat_statements
@@ -268,7 +252,7 @@ module PgHero
           query = <<~SQL
             WITH query_stats AS (
               SELECT
-                #{supports_query_hash? ? "query_hash" : "md5(query)"} AS query_hash,
+                query_hash AS query_hash,
                 pghero_query_stats.user AS user,
                 array_agg(LEFT(query, 10000) ORDER BY REPLACE(LEFT(query, 1000), '?', '!') COLLATE "C" ASC) AS query,
                 (SUM(total_time) / 1000 / 60) AS total_minutes,
@@ -278,7 +262,7 @@ module PgHero
                 pghero_query_stats
               WHERE
                 database = #{quote(id)}
-                #{supports_query_hash? ? "AND query_hash IS NOT NULL" : ""}
+                AND query_hash IS NOT NULL
                 #{start_at ? "AND captured_at >= #{quote(start_at)}" : ""}
                 #{end_at ? "AND captured_at <= #{quote(end_at)}" : ""}
                 #{query_hash ? "AND query_hash = #{quote(query_hash)}" : ""}
@@ -347,7 +331,7 @@ module PgHero
               total_time: qs[:total_minutes] * 60 * 1000,
               calls: qs[:calls],
               captured_at: now,
-              query_hash: supports_query_hash? ? qs[:query_hash] : nil,
+              query_hash: qs[:query_hash],
               user: qs[:user]
             }
           end

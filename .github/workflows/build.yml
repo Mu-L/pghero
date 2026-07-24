@@ -15,7 +15,7 @@ jobs:
             postgres: 16
           - ruby: 3.3
             gemfile: gemfiles/activerecord72.gemfile
-            postgres: 13
+            postgres: 14
             os: ubuntu-22.04
     env:
       BUNDLE_GEMFILE: ${{ matrix.gemfile }}
