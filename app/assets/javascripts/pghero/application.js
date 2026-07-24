@@ -70,7 +70,7 @@ function initSlider() {
     } else {
       html = time.getDate() + " " + months[time.getMonth()] + " " + pad(time.getHours()) + ":" + pad(time.getMinutes());
     }
-    selector.textContent = html;
+    document.querySelector(selector).textContent = html;
   }
 
   function timeAt(offset) {
