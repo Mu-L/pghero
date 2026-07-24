@@ -49,7 +49,9 @@ class ExplainTest < Minitest::Test
 
   def test_explain_multiple_statements
     City.create!
-    assert_raises(ActiveRecord::StatementInvalid) { database.explain("ANALYZE DELETE FROM cities; DELETE FROM cities; COMMIT") }
+    assert_raises(ActiveRecord::StatementInvalid) do
+      database.explain("ANALYZE DELETE FROM cities; DELETE FROM cities; COMMIT")
+    end
   end
 
   def test_explain_format_text
