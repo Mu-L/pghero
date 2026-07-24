@@ -15,7 +15,7 @@ class ExplainTest < Minitest::Test
   end
 
   def test_explain_analyze
-    database.explain("SELECT 1", analyze: true)
+    assert_match "Execution Time", database.explain("SELECT 1", analyze: true)
 
     error = assert_raises(ActiveRecord::StatementInvalid) do
       database.explain("ANALYZE SELECT 1")
@@ -24,7 +24,7 @@ class ExplainTest < Minitest::Test
 
     # not affected by explain option
     with_explain(true) do
-      database.explain("SELECT 1", analyze: true)
+      assert_match "Execution Time", database.explain("SELECT 1", analyze: true)
     end
   end
 
