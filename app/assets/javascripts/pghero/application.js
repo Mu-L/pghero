@@ -12,7 +12,7 @@ function highlightQueries() {
 
 function initSlider() {
   function roundTime(time) {
-    var period = 1000 * 60 * 5;
+    const period = 1000 * 60 * 5;
     return new Date(Math.ceil(time.getTime() / period) * period);
   }
 
@@ -20,19 +20,19 @@ function initSlider() {
     return num < 10 ? "0" + num : num;
   }
 
-  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  var days = 1;
-  var now = new Date();
-  var sliderStartAt = roundTime(now) - days * 24 * 60 * 60 * 1000;
-  var sliderMax = 24 * 12 * days;
+  const days = 1;
+  const now = new Date();
+  const sliderStartAt = roundTime(now) - days * 24 * 60 * 60 * 1000;
+  const sliderMax = 24 * 12 * days;
 
   startAt = startAt || sliderStartAt;
-  var min = startAt > 0 ? (startAt - sliderStartAt) / (1000 * 60 * 5) : 0;
+  const min = startAt > 0 ? (startAt - sliderStartAt) / (1000 * 60 * 5) : 0;
 
-  var max = endAt > 0 ? (endAt - sliderStartAt) / (1000 * 60 * 5) : sliderMax;
+  const max = endAt > 0 ? (endAt - sliderStartAt) / (1000 * 60 * 5) : sliderMax;
 
-  var slider = document.getElementById("slider");
+  const slider = document.getElementById("slider");
 
   noUiSlider.create(slider, {
     range: {
@@ -45,7 +45,7 @@ function initSlider() {
   });
 
   // remove outline for mouse only
-  var handle = document.querySelector(".noUi-handle");
+  const handle = document.querySelector(".noUi-handle");
   handle.addEventListener("mousedown", function (e) {
     e.target.classList.add("no-outline");
   });
@@ -54,15 +54,15 @@ function initSlider() {
   });
 
   function updateText() {
-    var values = slider.noUiSlider.get();
+    const values = slider.noUiSlider.get();
     setText("#range-start", values[0]);
     setText("#range-end", values[1]);
   }
 
   function setText(selector, offset) {
-    var time = timeAt(offset);
+    const time = timeAt(offset);
 
-    var html = "";
+    let html = "";
     if (time === now) {
       if (selector === "#range-end") {
         html = "Now";
@@ -74,7 +74,7 @@ function initSlider() {
   }
 
   function timeAt(offset) {
-    var time = new Date(sliderStartAt + offset * 5 * 60 * 1000);
+    const time = new Date(sliderStartAt + offset * 5 * 60 * 1000);
     return time > now ? now : time;
   }
 
@@ -83,7 +83,7 @@ function initSlider() {
   }
 
   function queriesPath(params) {
-    var path = "queries";
+    let path = "queries";
     if (params.start_at || params.end_at || params.sort || params.min_average_time || params.min_calls || params.debug) {
       path += "?" + (new URLSearchParams(params)).toString();
     }
@@ -91,11 +91,11 @@ function initSlider() {
   }
 
   function refreshStats(push) {
-    var values = slider.noUiSlider.get();
-    var startAt = push ? timeAt(values[0]) : new Date(window.startAt);
-    var endAt = timeAt(values[1]);
+    const values = slider.noUiSlider.get();
+    const startAt = push ? timeAt(values[0]) : new Date(window.startAt);
+    const endAt = timeAt(values[1]);
 
-    var params = {};
+    const params = {};
     if (startAt.getTime() != sliderStartAt) {
       params.start_at = timeParam(startAt);
     }
@@ -115,10 +115,10 @@ function initSlider() {
       params.debug = debug;
     }
 
-    var path = queriesPath(params);
+    const path = queriesPath(params);
 
     document.querySelectorAll(".queries-table th a").forEach(function (link) {
-      var p = Object.assign({}, params, {sort: link.getAttribute("data-sort"), min_average_time: minAverageTime, min_calls: minCalls, debug: debug});
+      const p = Object.assign({}, params, {sort: link.getAttribute("data-sort"), min_average_time: minAverageTime, min_calls: minCalls, debug: debug});
       if (!p.sort) {
         delete p.sort;
       }
@@ -134,7 +134,7 @@ function initSlider() {
       link.setAttribute("href", queriesPath(p));
     });
 
-    var queries = document.getElementById("queries");
+    const queries = document.getElementById("queries");
     queries.innerHTML = '<tr><td colspan="3"><p class="queries-info text-muted">...</p></td></tr>';
     fetch(path, {headers: {"X-Requested-With": "XMLHttpRequest"}})
       .then(function (response) {
@@ -148,7 +148,7 @@ function initSlider() {
         highlightQueries();
       })
       .catch(function (error) {
-        var queriesInfo = document.querySelector(".queries-info");
+        const queriesInfo = document.querySelector(".queries-info");
         queriesInfo.style.color = "red";
         queriesInfo.textContent = error.message;
       });
