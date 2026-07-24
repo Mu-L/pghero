@@ -28,7 +28,7 @@ sudo apt-get update
 sudo apt-get -y install pghero
 ```
 
-Supports Debian 11 (Bullseye) and 12 (Bookworm)
+Supports 12 (Bookworm)
 
 ## Setup
 
