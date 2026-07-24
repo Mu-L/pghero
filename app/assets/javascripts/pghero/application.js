@@ -20,8 +20,6 @@ function initSlider() {
     return num < 10 ? "0" + num : num;
   }
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
   const days = 1;
   const now = new Date();
   const sliderStartAt = roundTime(now) - days * 24 * 60 * 60 * 1000;
@@ -68,7 +66,7 @@ function initSlider() {
         html = "Now";
       }
     } else {
-      html = time.getDate() + " " + months[time.getMonth()] + " " + pad(time.getHours()) + ":" + pad(time.getMinutes());
+      html = time.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + " " + pad(time.getHours()) + ":" + pad(time.getMinutes());
     }
     document.querySelector(selector).textContent = html;
   }
