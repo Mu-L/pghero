@@ -318,7 +318,7 @@ module PgHero
             return
           end
 
-          @explanation = @database.explain_v2(@query, **explain_options)
+          @explanation = @database.explain(@query, **explain_options)
           @suggested_index = @database.suggested_indexes(queries: [@query]).first if @database.suggested_indexes_enabled?
           @visualize = params[:commit] == "Visualize"
         rescue ActiveRecord::StatementInvalid => e
