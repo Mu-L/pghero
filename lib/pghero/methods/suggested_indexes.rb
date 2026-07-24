@@ -2,7 +2,7 @@ module PgHero
   module Methods
     module SuggestedIndexes
       def suggested_indexes_enabled?
-        defined?(PgQuery) && Gem::Version.new(PgQuery::VERSION) >= Gem::Version.new("2") && query_stats_enabled?
+        defined?(PgQuery) && Gem::Version.new(PgQuery::VERSION) >= Gem::Version.new("6") && query_stats_enabled?
       end
 
       # TODO clean this mess
@@ -289,24 +289,20 @@ module PgHero
           else
             raise "Not Implemented"
           end
-        elsif aexpr && ["=", "<>", ">", ">=", "<", "<=", "~~", "~~*", "BETWEEN"].include?(aexpr.name.first.string.send(str_method))
-          [{column: aexpr.lexpr.column_ref.fields.last.string.send(str_method), op: aexpr.name.first.string.send(str_method)}]
+        elsif aexpr && ["=", "<>", ">", ">=", "<", "<=", "~~", "~~*", "BETWEEN"].include?(aexpr.name.first.string.sval)
+          [{column: aexpr.lexpr.column_ref.fields.last.string.sval, op: aexpr.name.first.string.sval}]
         elsif tree.null_test
           op = tree.null_test.nulltesttype == :IS_NOT_NULL ? "not_null" : "null"
-          [{column: tree.null_test.arg.column_ref.fields.last.string.send(str_method), op: op}]
+          [{column: tree.null_test.arg.column_ref.fields.last.string.sval, op: op}]
         else
           raise "Not Implemented"
         end
       end
 
-      def str_method
-        @str_method ||= Gem::Version.new(PgQuery::VERSION) >= Gem::Version.new("4") ? :sval : :str
-      end
-
       def parse_sort(sort_clause)
         sort_clause.map do |v|
           {
-            column: v.sort_by.node.column_ref.fields.last.string.send(str_method),
+            column: v.sort_by.node.column_ref.fields.last.string.sval,
             direction: v.sort_by.sortby_dir == :SORTBY_DESC ? "desc" : "asc"
           }
         end

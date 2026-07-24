@@ -2,6 +2,7 @@
 
 - Fixed error with unlogged sequences on replicas
 - Dropped support for Postgres < 14
+- Dropped support for pg_query < 6
 
 ## 3.8.0 (2026-04-15)
 
